@@ -1,0 +1,6 @@
+{
+  "name": "Block Explorer",
+  "description": "A sleek and modern block explorer with a built-in local node manager and AI-powered transaction analysis. Start and stop a local Ganache node, connect to public EVM endpoints, and get plain-English explanations of blockchain transactions powered by Google Gemini.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
