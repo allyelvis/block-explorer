@@ -50,6 +50,7 @@ export const LocalNodeManager: React.FC<LocalNodeManagerProps> = ({ isOpen, onCl
         blockTime: '2',
     });
     const [command, setCommand] = useState('');
+    const [copied, setCopied] = useState(false);
     const logsEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -60,6 +61,9 @@ export const LocalNodeManager: React.FC<LocalNodeManagerProps> = ({ isOpen, onCl
         if (config.accounts) parts.push(`--wallet.totalAccounts ${config.accounts}`);
         if (config.balance) parts.push(`--wallet.defaultBalance ${config.balance}`);
         if (config.blockTime) parts.push(`--miner.blockTime ${config.blockTime}`);
+        
+        // Fix for CORS errors when connecting from a browser-based app
+        parts.push('--server.allowOrigin "*"');
         
         const formattedCommand = parts.join(' \\\n        ');
         setCommand(formattedCommand);
@@ -72,6 +76,14 @@ export const LocalNodeManager: React.FC<LocalNodeManagerProps> = ({ isOpen, onCl
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setConfig(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleCopyCommand = () => {
+        const singleLineCommand = command.replace(/ \\\n\s*/g, ' ');
+        navigator.clipboard.writeText(singleLineCommand);
+        toast.success("Command copied!");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
     
     const handleStart = () => {
@@ -97,6 +109,9 @@ export const LocalNodeManager: React.FC<LocalNodeManagerProps> = ({ isOpen, onCl
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                     <div className="p-6 border-b lg:border-b-0 lg:border-r border-gray-700">
                         <h3 className="font-bold text-lg text-white mb-4">Configuration</h3>
+                        <div className="bg-indigo-900/50 border border-indigo-500/50 text-indigo-300 p-3 rounded-lg mb-4 text-xs">
+                            <strong>Note:</strong> <code className="font-mono bg-gray-700 px-1 rounded">--server.allowOrigin "*"</code> is added automatically to prevent browser connection (CORS) errors.
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="host">Host</Label>
@@ -138,6 +153,15 @@ export const LocalNodeManager: React.FC<LocalNodeManagerProps> = ({ isOpen, onCl
                                 </button>
                             </div>
                             <StatusIndicator status={status} />
+                        </div>
+                        <div className="mt-4">
+                            <Label htmlFor="command">Generated Command</Label>
+                            <div className="bg-gray-900 rounded-md p-3 text-gray-300 font-mono text-xs border border-gray-600 relative">
+                                <button onClick={handleCopyCommand} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-white transition-colors">
+                                    {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
+                                </button>
+                                <pre className="whitespace-pre-wrap pr-8">{command}</pre>
+                            </div>
                         </div>
                         <div className="mt-4">
                             <Label htmlFor="command">Live Terminal</Label>
